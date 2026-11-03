@@ -1,0 +1,75 @@
+<!doctype html>
+<!-- TextDetection: what textDetection() does after you press c. There was no webcam, so the run shown
+     put TEST.jpg (scaled to 300 px wide) into a blank 640 x 480 frame and called the program's own
+     textDetection() on it (OpenCV 3.2, Xvfb, 2026-11-04). The images are its "clear" and "rect"
+     windows; the letters and confidences were printed by its own commented-out cout line, switched on
+     in a copy. Render with ./render.sh text-ocr.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TextDetection: webcam OCR</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .body { display: grid; grid-template-columns: 1fr 360px; gap: 22px; margin-top: 20px; align-items: start; }
+  .steps { display: flex; flex-direction: column; gap: 9px; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; padding: 10px 13px; align-items: start; }
+  .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+         color: #fff; background: var(--blue); }
+  .step b { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .step .sub code { color: var(--ink); }
+  .shots { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg2); }
+  .shots img { display: block; width: 336px; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--line); }
+  .shots .frame-shot { width: 240px; align-self: center; }
+  .cap { font-size: 12px; color: var(--muted); }
+  .cap code { color: var(--ink); }
+  .read { display: flex; gap: 4px; margin-top: 2px; }
+  .read span { flex: 1; padding: 3px 0 4px; text-align: center; border-radius: 6px; font: 700 13.5px/1.15 "JetBrains Mono", Consolas, monospace;
+               border: 1px solid var(--green); color: var(--green); background: var(--card); }
+  .read span small { display: block; font-size: 9.5px; font-weight: 500; color: var(--muted); }
+  .read span.alike { border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+  .read span.bad { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+  .legend { display: flex; gap: 12px; font-size: 11.5px; color: var(--muted); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+</style>
+</head>
+<body>
+<script>if (location.hash === '#dark') document.documentElement.className = 'dark';</script>
+<div class="frame">
+  <h1>TextDetection <small>webcam OCR with opencv_contrib</small></h1>
+  <p class="lead">Point the camera at text inside the red box and press c. The frame freezes and every character-sized blob gets a letter.</p>
+
+  <div class="body">
+    <div class="steps">
+      <div class="card step"><span class="num">1</span><div><b>Freeze a frame</b>
+        <div class="sub">The live view shows a red box in the upper middle. Pressing c halves the frame and calls <code>textDetection()</code>.</div></div></div>
+      <div class="card step"><span class="num">2</span><div><b>Binarise and clean</b>
+        <div class="sub">Adaptive mean threshold (11 × 11, inverted), then <code>clearDots()</code> drops white pixels that have fewer than 4 white pixels in the 6 × 6 square around them.</div></div></div>
+      <div class="card step"><span class="num">3</span><div><b>Keep character-sized blobs</b>
+        <div class="sub">Connected components inside the box. Take the average area of the five biggest; keep blobs within ±⅔ of it.</div></div></div>
+      <div class="card step"><span class="num">4</span><div><b>Classify each blob</b>
+        <div class="sub">The text module's CNN classifier (<code>loadOCRHMMClassifierCNN</code>) picks one of 62 classes, a–z, A–Z and 0–9, and the letter is drawn under the box.</div></div></div>
+    </div>
+
+    <div class="shots">
+      <img class="frame-shot" src="screens/ocr-frame.png" alt="">
+      <div class="cap">No webcam here: <code>TEST.jpg</code>, scaled down, in a blank frame, through the same function.</div>
+      <img src="screens/ocr-clear.png" alt="">
+      <div class="cap">window <code>clear</code>: after the threshold and <code>clearDots()</code></div>
+      <img src="screens/ocr-result.png" alt="">
+      <div class="cap">window <code>rect</code>: 11 blobs kept, a letter under each</div>
+      <div class="read" id="read"></div>
+      <div class="legend"><span><i style="background:var(--green)"></i>right</span><span><i style="background:var(--amber)"></i>look-alike letter</span><span><i style="background:var(--red)"></i>wrong</span></div>
+    </div>
+  </div>
+</div>
+<script>
+  // Printed " Character = …" lines of the run, and the digits in TEST.jpg
+  const got = 'O L 2 B 4 S 6 7 8 S 9'.split(' '), truth = '0 1 2 3 4 5 6 7 8 8 9'.split(' ');
+  const alike = { O: '0', L: '1', B: '3', S: '5' };
+  document.getElementById('read').innerHTML = got.map((g, i) => {
+    const cls = g === truth[i] ? '' : alike[g] === truth[i] ? 'alike' : 'bad';
+    return `<span class="${cls}">${g}<small>${truth[i]}</small></span>`;
+  }).join('');
+</script>
+</body>
+</html>

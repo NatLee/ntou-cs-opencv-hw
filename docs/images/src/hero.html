@@ -1,0 +1,95 @@
+<!doctype html>
+<!-- README banner: the seven programs, grouped by what they detect, with their input. Folder names
+     are the real ones. Render with ./render.sh hero.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ntou-cs-opencv-hw: overview</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header { display: flex; align-items: center; gap: 16px; }
+  .mark { width: 54px; height: 54px; border-radius: 15px; flex: none; display: grid; place-items: center;
+          background: linear-gradient(140deg, #1f6feb, #1a7f37 55%, #d29922); box-shadow: var(--shadow); }
+  .pill { margin-left: auto; align-self: flex-start; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13.5px;
+          padding: 8px 13px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow); white-space: nowrap; }
+  .pill span { color: var(--muted); margin-right: 8px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 14px; margin-top: 24px; }
+  .grp { padding: 13px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .grp .label i { background: var(--c); }
+  .grp h2 { margin: -4px 0 0; font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; }
+  .grp > p { margin: -4px 0 0; font-size: 12.3px; color: var(--muted); }
+  .prog { border-top: 1px solid var(--line); padding-top: 9px; }
+  .prog .top { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+  .prog b { font: 650 12px/1.3 "JetBrains Mono", Consolas, monospace; letter-spacing: -0.02em; }
+  .prog .in { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .prog .in svg { color: var(--c); }
+  .prog p { margin: 4px 0 0; font-size: 12.3px; color: var(--muted); line-height: 1.35; }
+
+  .band { margin-top: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.8px; color: var(--muted); }
+  .band .step { padding: 6px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .band .step code { font-size: 12px; }
+  .band .when { margin-left: auto; }
+</style>
+</head>
+<body>
+<script>if (location.hash === '#dark') document.documentElement.className = 'dark';</script>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="cam" viewBox="0 0 16 16"><rect x="1.5" y="4" width="9.5" height="8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M11 7l3.5-2v6L11 9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+  <symbol id="img" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="6" r="1.3" fill="currentColor"/><path d="M2.5 12l4-4 3 3 2-2 3 3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div class="frame">
+  <header>
+    <div class="mark">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 16s4.5-8 13-8 13 8 13 8-4.5 8-13 8S3 16 3 16z"/><circle cx="16" cy="16" r="4.2"/>
+      </svg>
+    </div>
+    <div>
+      <h1>ntou-cs-opencv-hw</h1>
+      <p class="lead">Seven OpenCV programs from 2016 that <b>read text</b>, <b>count breaths</b> and <b>estimate a heart rate</b>.</p>
+    </div>
+    <div class="pill"><span>$</span>docker build .</div>
+  </header>
+
+  <div class="grid">
+    <div class="card grp" style="--c: var(--blue)">
+      <div class="label"><i></i>Text</div>
+      <h2>Find characters and read them</h2>
+      <div class="prog"><div class="top"><b>TextDetection</b><span class="in"><svg width="14" height="14"><use href="#cam"/></svg>webcam</span></div>
+        <p>Press c: threshold the red box, cut out character-sized blobs, read each with a CNN classifier.</p></div>
+      <div class="prog"><div class="top"><b>TextDetection4Ways</b><span class="in"><svg width="14" height="14"><use href="#img"/></svg>TEST.jpg</span></div>
+        <p>Projections find the line and the digits; four quadrant ratios are matched to 0–9 templates.</p></div>
+      <div class="prog"><div class="top"><b>TextDetectionUsingProfile</b><span class="in"><svg width="14" height="14"><use href="#img"/></svg>7.jpg</span></div>
+        <p>Row and column projections split a shop receipt into lines and blocks.</p></div>
+    </div>
+
+    <div class="card grp" style="--c: var(--green)">
+      <div class="label"><i></i>Breathing</div>
+      <h2>Watch the neckline move</h2>
+      <div class="prog"><div class="top"><b>NecklineDetectionUsingNormalMethod</b><span class="in"><svg width="14" height="14"><use href="#cam"/></svg>webcam</span></div>
+        <p>Skin colour finds where the neck meets the collar; each up-and-down is one breath.</p></div>
+      <div class="prog"><div class="top"><b>NecklineDetectionUsingOpticalFlow</b><span class="in"><svg width="14" height="14"><use href="#cam"/></svg>webcam</span></div>
+        <p>Same collar point, plus optical flow arrows along it; prints up / down.</p></div>
+    </div>
+
+    <div class="card grp" style="--c: var(--red)">
+      <div class="label"><i></i>Heart rate</div>
+      <h2>Follow the redness of skin</h2>
+      <div class="prog"><div class="top"><b>heartbeats</b><span class="in"><svg width="14" height="14"><use href="#cam"/></svg>webcam</span></div>
+        <p>Average red of the biggest skin area; its rises and falls are counted as beats.</p></div>
+      <div class="prog"><div class="top"><b>FaceAndHeartbeatDetection</b><span class="in"><svg width="14" height="14"><use href="#cam"/></svg>webcam</span></div>
+        <p>The same, but inside a face found by a Haar cascade.</p></div>
+    </div>
+  </div>
+
+  <div class="band">
+    <span class="step">C++11 · OpenCV 3.2 + contrib</span>
+    <span class="step"><code>CMakeLists.txt</code>: a program per folder</span>
+    <span class="step"><code>Dockerfile</code>: Ubuntu 18.04</span>
+    <span class="when">Apr – Jun 2016 · 4 authors</span>
+  </div>
+</div>
+</body>
+</html>

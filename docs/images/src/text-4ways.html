@@ -1,0 +1,81 @@
+<!doctype html>
+<!-- TextDetection4Ways: each step of Source.cpp next to the window the program really shows for it.
+     The images are the program's own windows (flood_inv, maxColRoi, roi), captured in Xvfb from a run
+     on TEST.jpg with OpenCV 3.2 (2026-11-04); the printed digits are its real output.
+     Render with ./render.sh text-4ways.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TextDetection4Ways: digits by quadrants</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .steps { display: grid; grid-template-columns: 270px 1fr; gap: 10px 22px; margin-top: 20px; align-items: center; }
+  .txt { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start; }
+  .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+         color: #fff; background: var(--blue); }
+  .txt b { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .txt .sub { margin-top: 2px; }
+  .txt .sub code { color: var(--ink); }
+  .pic { padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg2); display: flex; align-items: center; gap: 10px; }
+  .pic img { display: block; width: 564px; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--line); }
+  .txt .w { font: 11px/1.6 "JetBrains Mono", Consolas, monospace; color: var(--muted); }
+
+  .classify { display: flex; gap: 18px; align-items: center; }
+  .quad { display: grid; grid-template-columns: 54px 54px; grid-template-rows: 54px 54px; border: 1.5px solid var(--blue); border-radius: 6px; overflow: hidden; flex: none; }
+  .quad span { display: grid; place-items: center; font: 600 12px/1 "JetBrains Mono", Consolas, monospace; border: 1px dashed var(--line); background: var(--card); }
+  .tpl { font: 12px/1.6 "JetBrains Mono", Consolas, monospace; color: var(--muted); }
+  .tpl b { color: var(--ink); font-weight: 600; }
+  .out { display: flex; gap: 5px; }
+  .out span { width: 34px; padding: 4px 0 5px; text-align: center; border-radius: 7px; font: 700 15px/1.1 "JetBrains Mono", Consolas, monospace; border: 1px solid var(--green); color: var(--green); }
+  .out span small { display: block; font-size: 10px; font-weight: 500; color: var(--muted); }
+  .out span.bad { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+  .score { font-size: 13px; margin-left: 8px; align-self: center; }
+  .score b { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; display: block; }
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<script>if (location.hash === '#dark') document.documentElement.className = 'dark';</script>
+<div class="frame">
+  <h1>TextDetection4Ways <small>reading digits from four quadrants</small></h1>
+  <p class="lead">No OCR library: the digits are found with projections and recognised by how their ink is spread over four quadrants.</p>
+
+  <div class="steps">
+    <div class="txt"><span class="num">1</span><div><b>Input</b><div class="sub"><code>TEST.jpg</code>, read again on every pass of the main loop.</div></div></div>
+    <div class="pic"><img src="../../../TextDetection4Ways/TEST.jpg" alt=""></div>
+
+    <div class="txt"><span class="num">2</span><div><b>Strokes</b><div class="sub">Grey minus an erosion with an octagon, a threshold at max − range / 3, then a flood fill from the corner, inverted.</div><div class="w">window flood_inv</div></div></div>
+    <div class="pic"><img src="screens/4ways-strokes.png" alt=""></div>
+
+    <div class="txt"><span class="num">3</span><div><b>The text line</b><div class="sub">Row projection: the longest run of rows with at least half the average ink. Shown after one thinning pass.</div><div class="w">window maxColRoi</div></div></div>
+    <div class="pic"><img src="screens/4ways-line.png" alt=""></div>
+
+    <div class="txt"><span class="num">4</span><div><b>The characters</b><div class="sub">Column projection: runs of columns with 3+ ink pixels, wider than 5, become boxes.</div><div class="w">window roi</div></div></div>
+    <div class="pic"><img src="screens/4ways-boxes.png" alt=""></div>
+
+    <div class="txt"><span class="num">5</span><div><b>Match the quadrants</b><div class="sub">Each box is cut into four. The share of ink in each quadrant is compared with <code>0.txt</code> … <code>9.txt</code>; 3 of 4 within ±0.04 counts as a match.</div></div></div>
+    <div class="pic classify">
+      <div class="quad"><span>0.27</span><span>0.21</span><span>0.29</span><span>0.23</span></div>
+      <div class="tpl"><b>0.txt</b> 0.27 0.21 0.29 0.23<br><b>8.txt</b> 0.27 0.18 0.29 0.26<br><b>9.txt</b> 0.33 0.34 0.12 0.21<br>one line of four shares per template</div>
+    </div>
+
+    <div class="txt"><span class="num">6</span><div><b>Printed result</b><div class="sub">The digit with the most matching template lines wins.</div></div></div>
+    <div class="pic" style="gap:6px">
+      <div class="out" id="out"></div>
+      <div class="score"><b>8 of 11</b>right</div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="quirk"><b>Why 8 becomes 0:</b> the templates for 0 and 8 are almost the same, and there is only one template line per digit. <code>HandWrite/</code> has ten per digit, but the program does not read it.</div>
+    <div class="quirk"><b>Never stops by itself:</b> the main loop reads <code>TEST.jpg</code> again after every key press, and the templates are read by re-opening stdin with <code>freopen</code>.</div>
+  </div>
+</div>
+<script>
+  // Real stdout of the run (digits after "/////////////") and what TEST.jpg shows
+  const got = '0 1 2 3 4 5 6 7 0 0 5'.split(' '), truth = '0 1 2 3 4 5 6 7 8 8 9'.split(' ');
+  document.getElementById('out').innerHTML = got.map((g, i) =>
+    `<span class="${g === truth[i] ? '' : 'bad'}">${g}<small>${truth[i]}</small></span>`).join('');
+</script>
+</body>
+</html>

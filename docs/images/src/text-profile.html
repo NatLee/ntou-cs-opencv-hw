@@ -1,0 +1,74 @@
+<!doctype html>
+<!-- TextDetectionUsingProfile: what Source.cpp does with 7.jpg. Right: the program's own "gray" window,
+     captured in Xvfb (OpenCV 3.2, 2026-11-04). Left: 7.jpg with the rows and blocks the program
+     computed drawn on top; the numbers were printed by a copy of Source.cpp with two printf lines
+     added (its own drawing puts every box on the top edge, see the note). Render with ./render.sh text-profile.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TextDetectionUsingProfile: lines by projection</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .body { display: grid; grid-template-columns: 1fr 250px 250px; gap: 18px; margin-top: 20px; align-items: start; }
+  .steps { display: flex; flex-direction: column; gap: 10px; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; padding: 10px 13px; align-items: start; }
+  .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+         color: #fff; background: var(--blue); }
+  .step b { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .step .sub code { color: var(--ink); }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+  .img { position: relative; width: 250px; height: 333.5px; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
+  .img img { display: block; width: 250px; }
+  .img svg { position: absolute; inset: 0; }
+  .row { fill: rgba(9,105,218,.20); stroke: #0969da; stroke-width: 1; }
+  .blk { fill: none; stroke: #bc4c00; stroke-width: 2; stroke-dasharray: 4 3; }
+  figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+  figcaption b { color: var(--ink); }
+  .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<script>if (location.hash === '#dark') document.documentElement.className = 'dark';</script>
+<div class="frame">
+  <h1>TextDetectionUsingProfile <small>lines and blocks by projection</small></h1>
+  <p class="lead">Count the ink in every row and every column of a receipt, and cut where the count drops.</p>
+
+  <div class="body">
+    <div class="steps">
+      <div class="card step"><span class="num">1</span><div><b>Binarise</b>
+        <div class="sub">Otsu threshold, inverted, so the text is white (<code>cvThreshold</code>).</div></div></div>
+      <div class="card step"><span class="num">2</span><div><b>Rows</b>
+        <div class="sub">White pixels per row. A line starts above 10, ends below 10, and is kept if it is taller than 10. All 14 lines are found.</div></div></div>
+      <div class="card step"><span class="num">3</span><div><b>Blocks</b>
+        <div class="sub">For each line: widen the strokes (dilate 3 × 1, four times), count per column, split at gaps and merge blocks closer than 5 px.</div></div></div>
+      <div class="card step"><span class="num">4</span><div><b>Draw</b>
+        <div class="sub">Every block goes to <code>cvDrawRect</code> on the colour image.</div></div></div>
+    </div>
+
+    <figure>
+      <div class="img"><img src="../../../TextDetectionUsingProfile/7.jpg" alt=""><svg id="over" width="250" height="333.5" viewBox="0 0 500 667"></svg></div>
+      <figcaption><b>7.jpg with what it computed</b><br><span class="key" style="background:rgba(9,105,218,.35)"></span>14 rows <span class="key" style="border:2px dashed #bc4c00"></span>blocks</figcaption>
+    </figure>
+    <figure>
+      <div class="img"><img src="screens/profile-gray.png" alt=""></div>
+      <figcaption><b>Its “gray” window at the end</b>, after the dilations of every line</figcaption>
+    </figure>
+  </div>
+
+  <div class="notes">
+    <div class="quirk"><b>Blocks melt together:</b> each line's block search dilates the whole shared image again, so the first six lines get one almost full-width block each and the last eight none.</div>
+    <div class="quirk"><b>Boxes on the top edge:</b> <code>cvDrawRect(src, rect.x, rect.y, …)</code> passes two numbers where two corners belong. They become (x, 0) and (y, 0), so every box is a line along the top pixel row.</div>
+  </div>
+</div>
+<script>
+  // Printed by the instrumented copy: rows (y, height) and blocks (row y, x, width)
+  const rows = [[37,26],[101,31],[136,32],[203,29],[238,27],[267,27],[300,27],[331,25],[393,27],[424,27],[487,28],[518,27],[549,29],[582,28]];
+  const blocks = [[37,17,428],[101,13,436],[136,9,444],[203,5,452],[238,1,460],[267,0,465]];
+  const h = Object.fromEntries(rows);
+  document.getElementById('over').innerHTML =
+    rows.map(([y, hh]) => `<rect class="row" x="0" y="${y}" width="500" height="${hh}"/>`).join('') +
+    blocks.map(([y, x, w]) => `<rect class="blk" x="${x + 1}" y="${y + 1}" width="${w - 2}" height="${h[y] - 2}"/>`).join('');
+</script>
+</body>
+</html>
