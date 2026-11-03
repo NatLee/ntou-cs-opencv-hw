@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: OpenCV 3.2 (Ubuntu 18.04 image)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # The Dockerfile installs OpenCV 3.2 and builds all seven programs with CMake;
+      # the image build fails if any of them does not compile or link.
+      - name: Build all seven programs
+        run: docker build -t ntou-cs-opencv-hw .
+
+      - name: List what was built
+        run: docker run --rm ntou-cs-opencv-hw find build -maxdepth 1 -type f -perm -u+x
