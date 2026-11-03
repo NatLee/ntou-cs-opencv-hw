@@ -210,3 +210,7 @@ Written between 2016-04-24 and 2016-06-29 in Visual Studio with OpenCV 3; the pr
 never committed. In 2026 two Visual C++-only spots were replaced with standard C++ (a `for each`
 loop and an include path), two Big5-encoded files were converted to UTF-8, and CMake, a Docker
 toolchain, CI and this README were added. Nothing else in the programs changed.
+
+## License
+
+[MIT](LICENSE)
