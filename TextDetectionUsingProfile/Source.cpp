@@ -88,12 +88,12 @@ int main()
 	
 	list<CvRect> rows = GetRowRects(gray);
 	list<CvRect> items ;
-	for each(auto row in rows) {
+	for (auto row : rows) {
 		auto cols = GetBlockRects(gray, row.y);
 		items.insert(items.end(),cols.begin(),cols.end());//items.AddRange(cols);
 	}
 
-	for each(auto rect in items) {
+	for (auto rect : items) {
 		cvDrawRect(src, rect.x,rect.y, cvScalar(255), 1);
 	}
 	cvShowImage("src", src);
