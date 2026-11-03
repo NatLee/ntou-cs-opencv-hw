@@ -1,0 +1,9 @@
+# CMake build folder
+build/
+
+# Files the programs load at run time; the README says where to get them.
+# TextDetection: the OCR model from opencv_contrib
+TextDetection/OCRBeamSearch_CNN_model_data.xml.gz
+TextDetection/OCRHMM_transitions_table.xml
+# FaceAndHeartbeatDetection: the Haar cascades that come with OpenCV
+FaceAndHeartbeatDetection/haarcascade_*.xml

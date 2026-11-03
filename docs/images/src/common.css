@@ -1,0 +1,60 @@
+/* Shared look of the README pictures: GitHub Primer colours for the light theme, the same tokens
+   under .dark for the dark theme (render.sh opens each page with #dark for that), a rounded frame
+   with two soft tints and a dot grid. Every picture is 960 px wide; its height follows the content
+   and render.sh trims the transparent rest. A page that overrides a colour token in :root must
+   also override it in .dark. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=block");
+
+:root {
+  --bg: #ffffff; --bg2: #f6f8fa; --ink: #1f2328; --muted: #59636e; --line: #d1d9e0; --card: #ffffff;
+  --blue: #0969da; --green: #1a7f37; --purple: #8250df; --orange: #bc4c00; --red: #cf222e; --amber: #9a6700;
+  --amber-bg: #fff8c5; --red-bg: #ffebe9; --chip: #f6f8fa;
+  --shadow: 0 1px 2px rgba(31,35,40,.06), 0 6px 18px rgba(31,35,40,.06);
+  --wire: #8c959f;
+  --tint1: rgba(9,105,218,.08); --tint2: rgba(130,80,223,.07);
+}
+.dark {
+  --bg: #0d1117; --bg2: #151b23; --ink: #f0f6fc; --muted: #9198a1; --line: #3d444d; --card: #151b23;
+  --blue: #4493f8; --green: #3fb950; --purple: #ab7df8; --orange: #db6d28; --red: #f85149; --amber: #d29922;
+  --amber-bg: rgba(187,128,9,.15); --red-bg: rgba(248,81,73,.12); --chip: #212830;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --wire: #6e7681;
+  --tint1: rgba(68,147,248,.13); --tint2: rgba(171,125,248,.10);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: transparent; }
+body { font-family: Inter, "Segoe UI", "Microsoft JhengHei", sans-serif; color: var(--ink); font-size: 14px; line-height: 1.4;
+       font-variant-ligatures: none; /* keep ++, ->, != as typed */ }
+.frame { position: relative; width: 960px; border-radius: 22px; overflow: hidden; border: 1px solid var(--line);
+         padding: 30px 36px 32px;
+         background: radial-gradient(560px 320px at 96% 0%, var(--tint1), transparent 70%),
+                     radial-gradient(460px 280px at 0% 100%, var(--tint2), transparent 70%), var(--bg); }
+.frame::before { content: ""; position: absolute; inset: 0; opacity: .5; pointer-events: none;
+                 background-image: radial-gradient(var(--line) 1px, transparent 1.2px); background-size: 22px 22px;
+                 -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 60%, #000 100%); }
+.frame > * { position: relative; }
+
+h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+h1 small { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: 0; margin-left: 10px; }
+.lead { margin: 6px 0 0; font-size: 14.5px; color: var(--muted); }
+.lead b { color: var(--ink); font-weight: 600; }
+
+code, .mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: .92em; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; }
+.label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+         display: flex; align-items: center; gap: 8px; }
+.label code { text-transform: none; letter-spacing: 0; font-size: 12.5px; color: var(--ink); }
+.label i { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex: none; }
+.sub { font-size: 12.5px; color: var(--muted); }
+.chip { display: inline-block; font-family: "JetBrains Mono", Consolas, monospace; font-size: 11.5px; padding: 1px 7px;
+        border-radius: 999px; border: 1px solid var(--line); background: var(--chip); color: var(--ink); white-space: nowrap; }
+
+/* A remark about how the original code behaves (kept as it was) */
+.quirk { font-size: 12.5px; color: var(--ink); background: var(--amber-bg); border-left: 3px solid var(--amber);
+         border-radius: 0 8px 8px 0; padding: 7px 10px; }
+.quirk b { color: var(--amber); }
+
+/* Arrow between boxes in a flex row or column */
+.arrow { flex: none; align-self: center; color: var(--wire); display: grid; place-items: center; }
+.arrow svg { display: block; }

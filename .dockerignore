@@ -1,0 +1,3 @@
+# A local build folder holds host paths in CMakeCache.txt and would break the build inside the image.
+build/
+.git/

@@ -1,0 +1,93 @@
+<!doctype html>
+<!-- NecklineDetectionUsingNormalMethod and NecklineDetectionUsingOpticalFlow: how they find the neckline
+     and turn its movement into breaths. Both need a webcam, so this is a schematic drawn from the code
+     (NecklineDetection.cpp, find_collar.cpp, NecklineOpticalFlow.cpp), not a capture.
+     Render with ./render.sh breathing.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Neckline detection: counting breaths</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  :root { --skin: #f1c7a5; --shirt: #8c959f; --mask: #1f2328; }
+  .dark { --skin: #d9a985; --shirt: #57606a; --mask: #010409; }
+  .body { display: grid; grid-template-columns: 300px 1fr; gap: 22px; margin-top: 20px; align-items: start; }
+  .scene { padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg2); }
+  .scene svg { display: block; }
+  .scene .cap { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .steps { display: flex; flex-direction: column; gap: 9px; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; padding: 10px 13px; align-items: start; }
+  .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+         color: #fff; background: var(--blue); }
+  .step b { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .step .sub code { color: var(--ink); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .variant { padding: 12px 14px; }
+  .variant h3 { margin: 6px 0 4px; font: 700 13px/1.3 "JetBrains Mono", Consolas, monospace; }
+  .variant .sub code { color: var(--ink); }
+  .out { margin-top: 8px; font: 12px/1.5 "JetBrains Mono", Consolas, monospace; padding: 6px 9px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+  .quirk { margin-top: 12px; }
+</style>
+</head>
+<body>
+<script>if (location.hash === '#dark') document.documentElement.className = 'dark';</script>
+<div class="frame">
+  <h1>Counting breaths <small>NecklineDetection · two versions</small></h1>
+  <p class="lead">Breathing lifts the chest and shoulders a little. Both programs find where the neck meets the collar and watch that line move.</p>
+
+  <div class="body">
+    <div class="scene">
+      <svg width="276" height="276" viewBox="0 0 276 276">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#cf222e"/></marker>
+              <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1a7f37"/></marker></defs>
+        <rect width="276" height="276" rx="8" fill="var(--mask)"/>
+        <!-- head, neck, V-neck: the skin mask -->
+        <ellipse cx="104" cy="78" rx="42" ry="52" fill="var(--skin)"/>
+        <rect x="78" y="112" width="52" height="58" fill="var(--skin)"/>
+        <path d="M0 276 C 4 210, 36 186, 78 176 L 104 214 L 130 176 C 172 186, 204 210, 208 276 Z" fill="var(--shirt)"/>
+        <path d="M66 172 L 142 172 L 104 214 Z" fill="var(--skin)"/>
+        <g font-size="11" font-family="JetBrains Mono, Consolas, monospace">
+          <!-- the 120-pixel run: lowest row that is skin that wide -->
+          <line x1="70" y1="170" x2="138" y2="170" stroke="#d29922" stroke-width="3"/>
+          <path d="M140 170 H 186" stroke="#d29922" stroke-width="1" stroke-dasharray="2 2"/>
+          <text x="190" y="166" fill="#d29922">120 px</text><text x="190" y="179" fill="#d29922">of skin</text>
+          <!-- the neckline drawn below it, where skin ends -->
+          <path d="M70 175 L 104 212 L 138 175" fill="none" stroke="#0969da" stroke-width="4"/>
+          <path d="M122 195 H 186" stroke="#4493f8" stroke-width="1" stroke-dasharray="2 2"/>
+          <text x="190" y="199" fill="#4493f8">neckline</text>
+          <!-- the scan: from the bottom right, row by row -->
+          <path d="M264 266 L 264 214" stroke="#cf222e" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+          <text x="214" y="258" fill="#f85149">scan</text><text x="214" y="271" fill="#f85149">up</text>
+          <!-- breathing: the line moves up and down -->
+          <path d="M224 112 L 224 84" stroke="#1a7f37" stroke-width="2" marker-end="url(#ag)"/>
+          <path d="M224 118 L 224 146" stroke="#1a7f37" stroke-width="2" marker-end="url(#ag)"/>
+          <text x="234" y="119" fill="#3fb950">breath</text>
+        </g>
+      </svg>
+      <div class="cap">Schematic of the skin mask: skin is light, everything else dark. Both programs need a webcam, so this is drawn from the code, not captured.</div>
+    </div>
+
+    <div class="steps">
+      <div class="card step"><span class="num">1</span><div><b>Mirror and find skin</b>
+        <div class="sub">YCrCb colour range Cr 137–177, Cb 77–127, then erode and dilate to remove specks. Trackbars in the Control window tune the range.</div></div></div>
+      <div class="card step"><span class="num">2</span><div><b>Find the base of the neck</b>
+        <div class="sub">Scan rows from the bottom and columns from the right for the first run of 120 skin pixels in a row: the widest part of the neck.</div></div></div>
+      <div class="card step"><span class="num">3</span><div><b>Trace the collar</b>
+        <div class="sub">Along that run, look up to 50 px down for where skin stops. That edge is the neckline.</div></div></div>
+      <div class="card step"><span class="num">4</span><div><b>Turn movement into breaths</b>
+        <div class="sub">Follow the row frame by frame. When it changes direction after moving more than 5 px, that is half a breath.</div></div></div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="card variant"><div class="label"><i style="background:var(--green)"></i>NecklineDetectionUsingNormalMethod</div>
+      <div class="sub" style="margin-top:6px">Paints the neckline blue in the Original window, shows the mask in Skin and prints a line once per full breath, starting from 0.</div>
+      <div class="out">呼吸次數: 0<br>呼吸次數: 1</div></div>
+    <div class="card variant"><div class="label"><i style="background:var(--purple)"></i>NecklineDetectionUsingOpticalFlow</div>
+      <div class="sub" style="margin-top:6px">Works on a half-size frame and keeps only the largest skin area. It draws Farneback optical-flow arrows along the collar in the flow window and prints the direction when the collar moves more than 7 px.</div>
+      <div class="out">up<br>down</div></div>
+  </div>
+  <div class="quirk"><b>HighCb trackbar:</b> it is tied to the <i>low</i> Cb value (<code>&amp;LCb</code>), so dragging it moves the lower bound. The same line is in all four copies of the trackbar code; the two heart-rate programs never call theirs.</div>
+</div>
+</body>
+</html>
