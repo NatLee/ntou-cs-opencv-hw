@@ -84,7 +84,7 @@ int main()
 	IplImage* src = cvLoadImage(fileName, CV_LOAD_IMAGE_COLOR);//load src
 	IplImage* gray = cvLoadImage(fileName, CV_LOAD_IMAGE_GRAYSCALE);//load & convert to gray
 	cvThreshold(gray, gray, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);//use threshold
-	int h[H] = { 0 }; //c++¸Ì¥²¶·¬O±`¼Æ¹Bºâ¦¡...µLªk°ÊºA°t¸m ­ú
+	int h[H] = { 0 }; //c++è£¡å¿…é ˆæ˜¯å¸¸æ•¸é‹ç®—å¼...ç„¡æ³•å‹•æ…‹é…ç½® å“­
 	
 	list<CvRect> rows = GetRowRects(gray);
 	list<CvRect> items ;

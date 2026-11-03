@@ -8,7 +8,7 @@ void heartBeat(Mat skin, Mat &frame, vector<Rect> faces) {
 
 	Scalar font_color = Scalar(0, 0, 255);
 	CvPoint point = cvPoint(faces[0].y, faces[0].x);
-	double real_heartbeat = 0; //¨C¤ÀÄÁ¤ß¸õ
+	double real_heartbeat = 0; //æ¯åˆ†é˜å¿ƒè·³
 	double red_total = 0.0, passthru = 0.0;
 	for (int i = faces[0].y; i < faces[0].y + faces[0].height; i++) {
 		for (int j = faces[0].x; j < faces[0].y + faces[0].width; j++) {
@@ -30,7 +30,7 @@ void heartBeat(Mat skin, Mat &frame, vector<Rect> faces) {
 			time = clock();
 			cout << Heartbeat / 2 << endl;
 			real_heartbeat = Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60;
-			//cout << "¤ß¸õ:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << "¨C¤ÀÄÁ" << endl;
+			//cout << "å¿ƒè·³:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << "æ¯åˆ†é˜" << endl;
 			t = !t;
 		}
 	}
@@ -40,7 +40,7 @@ void heartBeat(Mat skin, Mat &frame, vector<Rect> faces) {
 			time = clock();
 			cout << Heartbeat / 2 << endl;
 			real_heartbeat = Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60;
-			//cout << "¤ß¸õ:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << "¨C¤ÀÄÁ" << endl;
+			//cout << "å¿ƒè·³:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << "æ¯åˆ†é˜" << endl;
 			t = !t;
 		}
 	}
